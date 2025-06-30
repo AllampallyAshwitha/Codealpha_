@@ -1,1 +1,568 @@
-
+{Add commentMore actions
+  "metadata": {
+    "kernelspec": {
+      "language": "python",
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {
+      "name": "python",
+      "version": "3.11.11",
+      "mimetype": "text/x-python",
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "pygments_lexer": "ipython3",
+      "nbconvert_exporter": "python",
+      "file_extension": ".py"
+    },
+    "kaggle": {
+      "accelerator": "none",
+      "dataSources": [
+        {
+          "sourceId": 12126394,
+          "sourceType": "datasetVersion",
+          "datasetId": 7635739
+        }
+      ],
+      "dockerImageVersionId": 31040,
+      "isInternetEnabled": false,
+      "language": "python",
+      "sourceType": "notebook",
+      "isGpuEnabled": false
+    }
+  },
+  "nbformat_minor": 4,
+  "nbformat": 4,
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": "# This Python 3 environment comes with many helpful analytics libraries installed\n# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n# For example, here's several helpful packages to load\n\nimport numpy as np # linear algebra\nimport pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n\n# Input data files are available in the read-only \"../input/\" directory\n# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n\nimport os\nfor dirname, _, filenames in os.walk('/kaggle/input'):\n    for filename in filenames:\n        print(os.path.join(dirname, filename))\n\n# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session",
+      "metadata": {
+        "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+        "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:15:19.005268Z",
+          "iopub.execute_input": "2025-06-11T05:15:19.005550Z",
+          "iopub.status.idle": "2025-06-11T05:15:25.019046Z",
+          "shell.execute_reply.started": "2025-06-11T05:15:19.005532Z",
+          "shell.execute_reply": "2025-06-11T05:15:25.017995Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": "**Import Modules**\n",
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": "import pandas as pd\nimport numpy as np\nimport os\nimport seaborn as sns\nimport matplotlib.pyplot as plt\nimport librosa\nimport librosa.display\nfrom IPython.display import Audio \nimport warnings\nwarnings.filterwarnings('ignore')",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:15:25.020827Z",
+          "iopub.execute_input": "2025-06-11T05:15:25.021145Z",
+          "iopub.status.idle": "2025-06-11T05:15:25.026785Z",
+          "shell.execute_reply.started": "2025-06-11T05:15:25.021122Z",
+          "shell.execute_reply": "2025-06-11T05:15:25.025784Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": "**Load the Dataset**",
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": "paths = []\nlabels = []\nfor dirname, _, filenames in os.walk('/kaggle/input'):\n    for filename in filenames:\n        paths.append(os.path.join(dirname, filename))\n        label = filename.split('_')[-1]\n        label = label.split('.')[0]\n        labels.append(label.lower())\n    if len(paths) == 2800:\n        break\nprint('Dataset is Loaded')",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:15:25.027704Z",
+          "iopub.execute_input": "2025-06-11T05:15:25.027935Z",
+          "iopub.status.idle": "2025-06-11T05:15:26.325169Z",
+          "shell.execute_reply.started": "2025-06-11T05:15:25.027917Z",
+          "shell.execute_reply": "2025-06-11T05:15:26.324143Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "len(paths)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:15:26.326338Z",
+          "iopub.execute_input": "2025-06-11T05:15:26.326791Z",
+          "iopub.status.idle": "2025-06-11T05:15:26.332902Z",
+          "shell.execute_reply.started": "2025-06-11T05:15:26.326759Z",
+          "shell.execute_reply": "2025-06-11T05:15:26.332019Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "paths[:5]",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:15:26.334779Z",
+          "iopub.execute_input": "2025-06-11T05:15:26.335044Z",
+          "iopub.status.idle": "2025-06-11T05:15:26.353796Z",
+          "shell.execute_reply.started": "2025-06-11T05:15:26.335023Z",
+          "shell.execute_reply": "2025-06-11T05:15:26.352584Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "labels[:5]",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:15:54.100544Z",
+          "iopub.execute_input": "2025-06-11T05:15:54.100872Z",
+          "iopub.status.idle": "2025-06-11T05:15:54.107486Z",
+          "shell.execute_reply.started": "2025-06-11T05:15:54.100849Z",
+          "shell.execute_reply": "2025-06-11T05:15:54.106513Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "## Create a dataframe\ndf = pd.DataFrame()\ndf['speech'] = paths\ndf['label'] = labels\ndf.head()",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:16:19.316402Z",
+          "iopub.execute_input": "2025-06-11T05:16:19.316739Z",
+          "iopub.status.idle": "2025-06-11T05:16:19.351414Z",
+          "shell.execute_reply.started": "2025-06-11T05:16:19.316716Z",
+          "shell.execute_reply": "2025-06-11T05:16:19.350442Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "df['label'].value_counts()",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:16:35.522727Z",
+          "iopub.execute_input": "2025-06-11T05:16:35.523234Z",
+          "iopub.status.idle": "2025-06-11T05:16:35.540238Z",
+          "shell.execute_reply.started": "2025-06-11T05:16:35.523166Z",
+          "shell.execute_reply": "2025-06-11T05:16:35.538569Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": "**Exploratory Data Analysis**\n",
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": "sns.countplot(data=df, x='label')",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:28:06.068882Z",
+          "iopub.execute_input": "2025-06-11T05:28:06.069187Z",
+          "iopub.status.idle": "2025-06-11T05:28:06.367824Z",
+          "shell.execute_reply.started": "2025-06-11T05:28:06.069165Z",
+          "shell.execute_reply": "2025-06-11T05:28:06.366465Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "def waveplot(data, sr, emotion):\n    plt.figure(figsize=(10,4))\n    plt.title(emotion, size=20)\n    librosa.display.waveshow(data, sr=sr)\n    plt.show()\n    \ndef spectogram(data, sr, emotion):\n    x = librosa.stft(data)\n    xdb = librosa.amplitude_to_db(abs(x))\n    plt.figure(figsize=(11,4))\n    plt.title(emotion, size=20)\n    librosa.display.specshow(xdb, sr=sr, x_axis='time', y_axis='hz')\n    plt.colorbar()",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:28:26.779373Z",
+          "iopub.execute_input": "2025-06-11T05:28:26.779707Z",
+          "iopub.status.idle": "2025-06-11T05:28:26.786824Z",
+          "shell.execute_reply.started": "2025-06-11T05:28:26.779679Z",
+          "shell.execute_reply": "2025-06-11T05:28:26.785611Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "emotion = 'fear'\npath = np.array(df['speech'][df['label']==emotion])[0]\ndata, sampling_rate = librosa.load(path)\nwaveplot(data, sampling_rate, emotion)\nspectogram(data, sampling_rate, emotion)\nAudio(path)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:28:38.849239Z",
+          "iopub.execute_input": "2025-06-11T05:28:38.849556Z",
+          "iopub.status.idle": "2025-06-11T05:28:55.644332Z",
+          "shell.execute_reply.started": "2025-06-11T05:28:38.849532Z",
+          "shell.execute_reply": "2025-06-11T05:28:55.643329Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "emotion = 'angry'\npath = np.array(df['speech'][df['label']==emotion])[1]\ndata, sampling_rate = librosa.load(path)\nwaveplot(data, sampling_rate, emotion)\nspectogram(data, sampling_rate, emotion)\nAudio(path)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:29:28.069875Z",
+          "iopub.execute_input": "2025-06-11T05:29:28.070479Z",
+          "iopub.status.idle": "2025-06-11T05:29:28.935181Z",
+          "shell.execute_reply.started": "2025-06-11T05:29:28.070450Z",
+          "shell.execute_reply": "2025-06-11T05:29:28.934134Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "emotion = 'disgust'\npath = np.array(df['speech'][df['label']==emotion])[0]\ndata, sampling_rate = librosa.load(path)\nwaveplot(data, sampling_rate, emotion)\nspectogram(data, sampling_rate, emotion)\nAudio(path)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:30:16.520883Z",
+          "iopub.execute_input": "2025-06-11T05:30:16.521335Z",
+          "iopub.status.idle": "2025-06-11T05:30:17.760495Z",
+          "shell.execute_reply.started": "2025-06-11T05:30:16.521307Z",
+          "shell.execute_reply": "2025-06-11T05:30:17.759322Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "emotion = 'neutral'\npath = np.array(df['speech'][df['label']==emotion])[0]\ndata, sampling_rate = librosa.load(path)\nwaveplot(data, sampling_rate, emotion)\nspectogram(data, sampling_rate, emotion)\nAudio(path)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:30:33.994033Z",
+          "iopub.execute_input": "2025-06-11T05:30:33.994365Z",
+          "iopub.status.idle": "2025-06-11T05:30:34.931812Z",
+          "shell.execute_reply.started": "2025-06-11T05:30:33.994340Z",
+          "shell.execute_reply": "2025-06-11T05:30:34.930654Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "emotion = 'sad'\npath = np.array(df['speech'][df['label']==emotion])[0]\ndata, sampling_rate = librosa.load(path)\nwaveplot(data, sampling_rate, emotion)\nspectogram(data, sampling_rate, emotion)\nAudio(path)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:30:51.034586Z",
+          "iopub.execute_input": "2025-06-11T05:30:51.034942Z",
+          "iopub.status.idle": "2025-06-11T05:30:51.940355Z",
+          "shell.execute_reply.started": "2025-06-11T05:30:51.034918Z",
+          "shell.execute_reply": "2025-06-11T05:30:51.939228Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "emotion = 'ps'\npath = np.array(df['speech'][df['label']==emotion])[0]\ndata, sampling_rate = librosa.load(path)\nwaveplot(data, sampling_rate, emotion)\nspectogram(data, sampling_rate, emotion)\nAudio(path)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:31:28.289184Z",
+          "iopub.execute_input": "2025-06-11T05:31:28.289503Z",
+          "iopub.status.idle": "2025-06-11T05:31:29.202216Z",
+          "shell.execute_reply.started": "2025-06-11T05:31:28.289479Z",
+          "shell.execute_reply": "2025-06-11T05:31:29.200945Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "emotion = 'happy'\npath = np.array(df['speech'][df['label']==emotion])[0]\ndata, sampling_rate = librosa.load(path)\nwaveplot(data, sampling_rate, emotion)\nspectogram(data, sampling_rate, emotion)\nAudio(path)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:31:48.623771Z",
+          "iopub.execute_input": "2025-06-11T05:31:48.624094Z",
+          "iopub.status.idle": "2025-06-11T05:31:49.557442Z",
+          "shell.execute_reply.started": "2025-06-11T05:31:48.624064Z",
+          "shell.execute_reply": "2025-06-11T05:31:49.556310Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": "**Feature Extraction**",
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": "def extract_mfcc(filename):\n    y, sr = librosa.load(filename, duration=3, offset=0.5)\n    mfcc = np.mean(librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40).T, axis=0)\n    return mfcc",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:32:31.808820Z",
+          "iopub.execute_input": "2025-06-11T05:32:31.809229Z",
+          "iopub.status.idle": "2025-06-11T05:32:31.814395Z",
+          "shell.execute_reply.started": "2025-06-11T05:32:31.809204Z",
+          "shell.execute_reply": "2025-06-11T05:32:31.813320Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "extract_mfcc(df['speech'][0])",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:32:45.799576Z",
+          "iopub.execute_input": "2025-06-11T05:32:45.799944Z",
+          "iopub.status.idle": "2025-06-11T05:32:47.595317Z",
+          "shell.execute_reply.started": "2025-06-11T05:32:45.799921Z",
+          "shell.execute_reply": "2025-06-11T05:32:47.594469Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "X_mfcc = df['speech'].apply(lambda x: extract_mfcc(x))",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:41:36.235364Z",
+          "iopub.execute_input": "2025-06-11T05:41:36.235760Z",
+          "iopub.status.idle": "2025-06-11T05:42:39.744828Z",
+          "shell.execute_reply.started": "2025-06-11T05:41:36.235718Z",
+          "shell.execute_reply": "2025-06-11T05:42:39.743762Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "X_mfcc",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:42:46.691465Z",
+          "iopub.execute_input": "2025-06-11T05:42:46.692798Z",
+          "iopub.status.idle": "2025-06-11T05:42:46.704991Z",
+          "shell.execute_reply.started": "2025-06-11T05:42:46.692750Z",
+          "shell.execute_reply": "2025-06-11T05:42:46.703446Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "X = [x for x in X_mfcc]\nX = np.array(X)\nX.shape",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:43:07.265315Z",
+          "iopub.execute_input": "2025-06-11T05:43:07.265705Z",
+          "iopub.status.idle": "2025-06-11T05:43:07.279003Z",
+          "shell.execute_reply.started": "2025-06-11T05:43:07.265679Z",
+          "shell.execute_reply": "2025-06-11T05:43:07.277793Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "## input split\nX = np.expand_dims(X, -1)\nX.shape",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:43:19.752656Z",
+          "iopub.execute_input": "2025-06-11T05:43:19.752963Z",
+          "iopub.status.idle": "2025-06-11T05:43:19.760070Z",
+          "shell.execute_reply.started": "2025-06-11T05:43:19.752939Z",
+          "shell.execute_reply": "2025-06-11T05:43:19.758774Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "from sklearn.preprocessing import OneHotEncoder\nenc = OneHotEncoder()\ny = enc.fit_transform(df[['label']])",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:43:35.232698Z",
+          "iopub.execute_input": "2025-06-11T05:43:35.233554Z",
+          "iopub.status.idle": "2025-06-11T05:43:35.242759Z",
+          "shell.execute_reply.started": "2025-06-11T05:43:35.233522Z",
+          "shell.execute_reply": "2025-06-11T05:43:35.241456Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "y = y.toarray()",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:43:46.731238Z",
+          "iopub.execute_input": "2025-06-11T05:43:46.731572Z",
+          "iopub.status.idle": "2025-06-11T05:43:46.739689Z",
+          "shell.execute_reply.started": "2025-06-11T05:43:46.731548Z",
+          "shell.execute_reply": "2025-06-11T05:43:46.738476Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "y.shape",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:43:56.410537Z",
+          "iopub.execute_input": "2025-06-11T05:43:56.411838Z",
+          "iopub.status.idle": "2025-06-11T05:43:56.417879Z",
+          "shell.execute_reply.started": "2025-06-11T05:43:56.411797Z",
+          "shell.execute_reply": "2025-06-11T05:43:56.416757Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": "**Create the LSTM Model**",
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": "from keras.models import Sequential\nfrom keras.layers import Dense, LSTM, Dropout\n\nmodel = Sequential([\n    LSTM(256, return_sequences=False, input_shape=(40,1)),\n    Dropout(0.2),\n    Dense(128, activation='relu'),\n    Dropout(0.2),\n    Dense(64, activation='relu'),\n    Dropout(0.2),\n    Dense(7, activation='softmax')\n])\n\nmodel.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])\nmodel.summary()",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:47:53.750954Z",
+          "iopub.execute_input": "2025-06-11T05:47:53.751361Z",
+          "iopub.status.idle": "2025-06-11T05:47:53.862417Z",
+          "shell.execute_reply.started": "2025-06-11T05:47:53.751336Z",
+          "shell.execute_reply": "2025-06-11T05:47:53.861545Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "# Train the model\nhistory = model.fit(X, y, validation_split=0.2, epochs=50, batch_size=64)",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:48:21.695239Z",
+          "iopub.execute_input": "2025-06-11T05:48:21.695560Z",
+          "iopub.status.idle": "2025-06-11T05:51:49.992183Z",
+          "shell.execute_reply.started": "2025-06-11T05:48:21.695540Z",
+          "shell.execute_reply": "2025-06-11T05:51:49.991125Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "# best val accuracy: 72.32\n# use checkpoint to save the best val accuracy model\n# adjust learning rate for slow convergence",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:53:11.320853Z",
+          "iopub.execute_input": "2025-06-11T05:53:11.321210Z",
+          "iopub.status.idle": "2025-06-11T05:53:11.325959Z",
+          "shell.execute_reply.started": "2025-06-11T05:53:11.321187Z",
+          "shell.execute_reply": "2025-06-11T05:53:11.324911Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": "**Plot the results**",
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": "epochs = list(range(50))\nacc = history.history['accuracy']\nval_acc = history.history['val_accuracy']\n\nplt.plot(epochs, acc, label='train accuracy')\nplt.plot(epochs, val_acc, label='val accuracy')\nplt.xlabel('epochs')\nplt.ylabel('accuracy')\nplt.legend()\nplt.show()",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:53:47.065516Z",
+          "iopub.execute_input": "2025-06-11T05:53:47.065886Z",
+          "iopub.status.idle": "2025-06-11T05:53:47.258308Z",
+          "shell.execute_reply.started": "2025-06-11T05:53:47.065847Z",
+          "shell.execute_reply": "2025-06-11T05:53:47.257345Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": "loss = history.history['loss']\nval_loss = history.history['val_loss']\n\nplt.plot(epochs, loss, label='train loss')\nplt.plot(epochs, val_loss, label='val loss')\nplt.xlabel('epochs')\nplt.ylabel('loss')\nplt.legend()\nplt.show()",
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2025-06-11T05:54:12.635857Z",
+          "iopub.execute_input": "2025-06-11T05:54:12.636260Z",
+          "iopub.status.idle": "2025-06-11T05:54:12.832441Z",
+          "shell.execute_reply.started": "2025-06-11T05:54:12.636236Z",
+          "shell.execute_reply": "2025-06-11T05:54:12.831467Z"
+        }
+      },
+      "outputs": [],
+      "execution_count": null
+    }
+  ]
+}
